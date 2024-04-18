@@ -28,7 +28,7 @@ public class SampleAuthenticatedUserController {
 
     @GetMapping
     public UserViewModel getLoggedInUser(@AuthenticationPrincipal CustomUserCredential userCredential) {
-        UserEntity userEntity = this.userRepository.findById(userCredential.getUserId()).orElseThrow(() -> new RuntimeException("ユーザーが見つかりませんでした"));
+        UserEntity userEntity = this.userRepository.findById(userCredential.getUserId()).orElseThrow(() -> new RuntimeException("오류"));
         return new UserViewModel(
                 userEntity.getUserId(),
                 userEntity.getName(),
