@@ -1,63 +1,63 @@
+<script setup lang="ts">
+
+const userCreationForm = reactive({
+  name: "",
+  email: "",
+  password: "",
+});
+const addUser = () => {
+  fetch("http://localhost:8181/user", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    body: JSON.stringify(userCreationForm),
+  }).then((_)=> {
+    userCreationForm.name = ""
+    userCreationForm.email = ""
+    userCreationForm.password = ""
+  });
+};
+
+
+
+type UserType = {
+  userId: number;
+  name: string;
+  email: string;
+};
+const users = ref<UserType[]>([]);
+
+fetch("http://localhost:8181/sample/users")
+    .then((response) => response.json())
+    .then((data) => {
+      users.value = data;
+    })
+    .catch((_) => {});
+</script>
 <template>
   <div>
-    <h1>Welcome to Our Service!</h1>
-    <p v-if="auth.isAuthenticated">Thanks for logging in, {{ auth.user.name }}!</p>
-    <div v-else>
-      <p>Please login or register to enjoy our full services.</p>
-      <!-- Login Form -->
-      <form @submit.prevent="handleLogin">
-        <input v-model="loginEmail" type="email" placeholder="Email">
-        <input v-model="loginPassword" type="password" placeholder="Password">
-        <button type="submit">Login</button>
-      </form>
-      <!-- Registration Form -->
-      <form @submit.prevent="handleRegister">
-        <input v-model="registerName" placeholder="Name">
-        <input v-model="registerEmail" type="email" placeholder="Email">
-        <input v-model="registerPassword" type="password" placeholder="Password">
-        <button type="submit">Register</button>
-      </form>
+    <h1>Top</h1>
+    <div>
+      <ul>
+        <li v-for="user in users">
+          {{ user.userId }}/{{ user.name }}/{{ user.email }}
+        </li>
+      </ul>
     </div>
   </div>
+
+  <div>
+    <h2>Add User</h2>
+    <div>
+      <div>name: <v-text-field type="text" v-model="userCreationForm.name"/></div>
+      <div>email: <v-text-field type="email" v-model="userCreationForm.email"/></div>
+      <div>
+        password: <v-text-field type="password" v-model="userCreationForm.password"/>
+      </div>
+      <v-btn @click="addUser()">add</v-btn>
+    </div>
+  </div>
+
 </template>
-
-<script setup>
-import { ref } from 'vue';
-import { useAuthStore } from '@/stores/useAuth';
-const auth = useAuthStore();
-
-const loginEmail = ref('');
-const loginPassword = ref('');
-const registerName = ref('');
-const registerEmail = ref('');
-const registerPassword = ref('');
-
-const handleLogin = async () => {
-  try {
-    await auth.login(loginEmail.value, loginPassword.value);
-    alert('Login successful');
-    loginEmail.value = '';
-    loginPassword.value = '';
-  } catch (error) {
-    console.error(error.message);
-    alert('Login failed: ' + error.message);
-  }
-}
-
-const handleRegister = async () => {
-  try {
-    await auth.register({
-      name: registerName.value,
-      email: registerEmail.value,
-      password: registerPassword.value
-    });
-    alert('Registration successful');
-    registerName.value = '';
-    registerEmail.value = '';
-    registerPassword.value = '';
-  } catch (error) {
-    console.error(error.message);
-    alert('Registration failed: ' + error.message);
-  }
-}
-</script>

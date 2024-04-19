@@ -5,6 +5,7 @@ export default defineNuxtConfig({
     '@mdi/font/css/materialdesignicons.css', // Material Design Icons
     'vuetify/styles' // Vuetify 스타일
   ],
+
   build: {
     transpile: ['vuetify'],
   },
@@ -17,7 +18,6 @@ export default defineNuxtConfig({
     },
     '@pinia/nuxt',
   ],
-
   vite: {
     vue: {
       template: {
@@ -25,4 +25,5 @@ export default defineNuxtConfig({
       },
     }
   },
+
 });

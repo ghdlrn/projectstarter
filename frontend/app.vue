@@ -1,7 +1,8 @@
 <template>
   <div>
-    <nuxt-link to="/">Top</nuxt-link>/ <nuxt-link to="/login">Login</nuxt-link>/
-    <nuxt-link to="/mypage">MyPage</nuxt-link>
+    <NuxtLink to="/">Top</NuxtLink>
+    <NuxtLink to="/login">Login</NuxtLink>/
+    <NuxtLink to="/mypage">MyPage</NuxtLink>
     <NuxtPage />
   </div>
 </template>

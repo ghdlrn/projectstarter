@@ -1,48 +1,127 @@
+<script setup lang="ts">
+const router = useRouter();
+const user = reactive({
+  userId: null,
+  name: "",
+  email: "",
+});
+
+const getUser = () => {
+  fetch("http://localhost:8181/user", {
+    credentials: "include",
+  })
+      .then((response) => response.json())
+      .then((data) => {
+        user.userId = data.userId;
+        user.name = data.name;
+        user.email = data.email;
+
+        userUpdatingForm.name = data.name;
+        userUpdatingForm.email = data.email;
+      })
+      .catch((_) => {
+        router.push("/login");
+      });
+}
+getUser()
+
+const logout = () => {
+  fetch("http://localhost:8181/logout", {
+    credentials: "include",
+  });
+
+  router.push("/");
+};
+
+const userCreationForm = reactive({
+  name: "",
+  email: "",
+  password: "",
+});
+const addUser = () => {
+  fetch("http://localhost:8181/user", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    body: JSON.stringify(userCreationForm),
+  }).then((_)=> {
+    userCreationForm.name = ""
+    userCreationForm.email = ""
+    userCreationForm.password = ""
+  });
+};
+
+const userUpdatingForm = reactive({
+  name: "",
+  email: "",
+  password: "",
+});
+const updateUser = () => {
+  fetch("http://localhost:8181/user", {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    body: JSON.stringify(userUpdatingForm),
+  }).then((_) => getUser());
+};
+
+const deleteUser = () => {
+  fetch("http://localhost:8181/user", {
+    method: "DELETE",
+    credentials: "include",
+  }).then((_) => {
+    logout();
+    router.push("/");
+  });
+};
+</script>
+
 <template>
+  <h1>MyPage</h1>
+
   <div>
-    <h1>My Page</h1>
-    <form @submit.prevent="updateUser">
+    <div>userId: {{ user.userId }}</div>
+    <div>name: {{ user.name }}</div>
+    <div>email: {{ user.email }}</div>
+
+    <div>
+      <button @click="logout()">logout</button>
+    </div>
+  </div>
+
+  <hr/>
+  <div>
+    <h2>Add User</h2>
+    <div>
+      <div>name: <v-text-field type="text" v-model="userCreationForm.name"/></div>
+      <div>email: <v-text-field type="email" v-model="userCreationForm.email"/></div>
       <div>
-        <label for="name">Name:</label>
-        <input id="name" v-model="name" type="text">
+        password: <v-text-field type="password" v-model="userCreationForm.password"/>
       </div>
+      <v-btn @click="addUser()">add</v-btn>
+    </div>
+  </div>
+
+  <hr/>
+  <div>
+    <h2>Update User</h2>
+    <div>
+      <div>name: <v-text-field type="text" v-model="userUpdatingForm.name"/></div>
+      <div>email: <v-text-field type="email" v-model="userUpdatingForm.email"/></div>
       <div>
-        <label for="email">Email:</label>
-        <input id="email" v-model="email" type="email">
+        password: <v-text-field type="password" v-model="userUpdatingForm.password"/>
       </div>
-      <button type="submit">Update Info</button>
-      <button @click="deleteUser">Delete My Account</button>
-    </form>
+      <v-btn @click="updateUser()">update</v-btn>
+    </div>
+  </div>
+
+  <hr/>
+  <div>
+    <h2>Delete User</h2>
+    <v-btn @click="deleteUser()">delete me</v-btn>
   </div>
 </template>
-
-<script setup>
-import { ref } from 'vue';
-import { useAuthStore } from '@/stores/useAuth';
-const auth = useAuthStore();
-
-const name = ref(auth.user?.name || '');
-const email = ref(auth.user?.email || '');
-
-const updateUser = async () => {
-  try {
-    await auth.updateUser({ name: name.value, email: email.value });
-    alert('Your information has been updated.');
-  } catch (error) {
-    console.error(error.message);
-    alert('Failed to update your information.');
-  }
-}
-
-const deleteUser = async () => {
-  try {
-    if (confirm('Are you sure you want to delete your account? This cannot be undone.')) {
-      await auth.deleteUser();
-      alert('Your account has been deleted.');
-    }
-  } catch (error) {
-    console.error(error.message);
-    alert('Failed to delete your account.');
-  }
-}
-</script>

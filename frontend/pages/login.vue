@@ -1,28 +1,31 @@
-<!-- login.vue -->
+<script setup lang="ts">
+const router = useRouter()
+
+const inputForm = reactive({
+  email: "labol@example.com",
+  password: "password",
+})
+
+const login = () => {
+  const params = new URLSearchParams();
+  params.append("username", inputForm.email)
+  params.append("password", inputForm.password)
+
+  fetch('http://localhost:8181/api/login', {
+    credentials: 'include',
+    method: "POST",
+    body: params,
+  }).then(res => {
+    router.push('/mypage')
+  })
+}
+
+</script>
 <template>
+  <h1>Login</h1>
   <div>
-    <input v-model="email" type="email" placeholder="Email">
-    <input v-model="password" type="password" placeholder="Password">
-    <button @click="handleLogin">Login</button>
+    <v-text-field type="email" v-model="inputForm.email"></v-text-field>
+    <v-text-field type="password" v-model="inputForm.password"></v-text-field>
+    <v-btn @click="login()">login</v-btn>
   </div>
 </template>
-
-<script setup>
-import { ref } from 'vue';
-import { useAuthStore } from '@/stores/useAuth';
-
-const email = ref('');
-const password = ref('');
-const auth = useAuthStore();
-
-const handleLogin = async () => {
-  try {
-    await auth.login(email.value, password.value);
-    console.log('Login successful');
-    // Redirect or perform additional actions on successful login
-  } catch (error) {
-    console.error(error.message);
-    // Handle login failure (e.g., display an error message)
-  }
-}
-</script>
