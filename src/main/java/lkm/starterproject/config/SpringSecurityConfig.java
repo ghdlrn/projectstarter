@@ -1,66 +1,47 @@
 package lkm.starterproject.config;
 
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import lkm.starterproject.CustomUserDetailService;
+import lkm.starterproject.UserDetailService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.AuthenticationFailureHandler;
-import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
-import org.springframework.stereotype.Component;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
-import java.io.IOException;
 
 @Configuration
 @EnableWebSecurity
 public class SpringSecurityConfig {
 
-    private final CustomUserDetailService customUserDetailService;
-    private final CustomAuthenticationSuccessHandler customAuthenticationSuccessHandler;
-    private final CustomAuthenticationFailureHandler customAuthenticationFailureHandler;
+    private final UserDetailService userDetailService;  //이메일로 사용자정보 조회하고 UserDetail 객체반환
 
     private static final String[] PUBLIC_ENDPOINTS = {
             "/",
-            "/sample/**",
     };
 
-    public SpringSecurityConfig(CustomUserDetailService customUserDetailService, CustomAuthenticationSuccessHandler customAuthenticationSuccessHandler, CustomAuthenticationFailureHandler customAuthenticationFailureHandler) {
-        this.customUserDetailService = customUserDetailService;
-        this.customAuthenticationSuccessHandler = customAuthenticationSuccessHandler;
-        this.customAuthenticationFailureHandler = customAuthenticationFailureHandler;
+    public SpringSecurityConfig(UserDetailService userDetailService) {
+        this.userDetailService = userDetailService;
     }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
-                .userDetailsService(this.customUserDetailService)
+                .userDetailsService(this.userDetailService)   //customUserDetail로 로드된 사용자정보 인증
                 .authorizeHttpRequests(customizer -> customizer
-                        .requestMatchers(PUBLIC_ENDPOINTS)
+                        .requestMatchers(PUBLIC_ENDPOINTS) //Public_endpoints에 지정된 경로는 인증없이 접근 가능
                         .permitAll()
                         .anyRequest().authenticated()
                 )
                 .formLogin(customizer -> {
                     customizer
-                            .loginProcessingUrl("/api/login")
-                            .permitAll()
-                            .successHandler(this.customAuthenticationSuccessHandler)
-                            .failureHandler(this.customAuthenticationFailureHandler)
-                    ;
+                            .loginProcessingUrl("/api/login")   // /api/login url을 통해 로그인 처리
+                            .permitAll();
                 })
                 .cors((e) -> {})
                 .csrf(AbstractHttpConfigurer::disable)
@@ -68,38 +49,14 @@ public class SpringSecurityConfig {
                 .build();
     }
 
-    @Component
-    static class CustomAuthenticationSuccessHandler implements AuthenticationSuccessHandler {
-
-        @Override
-        public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authentication) throws IOException, ServletException {
-            AuthenticationSuccessHandler.super.onAuthenticationSuccess(request, response, chain, authentication);
-        }
-
-        @Override
-        public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
-            System.out.printf("success");
-            response.setStatus(HttpStatus.OK.value());
-        }
-    }
-
-    @Component
-    static class CustomAuthenticationFailureHandler implements AuthenticationFailureHandler  {
-        @Override
-        public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) {
-            System.out.printf("error");
-            response.setStatus(HttpStatus.UNAUTHORIZED.value());
-        }
-    }
-
     @Bean
-    PasswordEncoder passwordEncoder() {
+    PasswordEncoder passwordEncoder() { //비밀번호 인코딩
         return PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
 
 
     @Bean
-    CorsConfigurationSource corsConfigurationSource() {
+    CorsConfigurationSource corsConfigurationSource() {     //CORS설정
         CorsConfiguration configuration = new CorsConfiguration();
 
         configuration.setAllowCredentials(true);

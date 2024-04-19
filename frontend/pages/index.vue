@@ -29,7 +29,7 @@ type UserType = {
 };
 const users = ref<UserType[]>([]);
 
-fetch("http://localhost:8181/sample/users")
+fetch("http://localhost:8181/users")
     .then((response) => response.json())
     .then((data) => {
       users.value = data;
