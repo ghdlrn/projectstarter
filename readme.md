@@ -6,8 +6,8 @@ springboot 3.2.4
 lombok
 springboot devtool
 spring web
-spring security
-querydsl
+spring security 6.2.3
+querydsl 5.0.0
 
 DB
 spring data JPA
