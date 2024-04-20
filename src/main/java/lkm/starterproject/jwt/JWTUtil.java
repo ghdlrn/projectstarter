@@ -20,7 +20,7 @@ public class JWTUtil {
 
     public String getEmail(String token) {   //email토큰 검증 메서드
         return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("email", String.class);
-                //토큰이 내 서버에서 생성되었는지   생성된 키가 내가 가진 secretKet와 일치하는지 확인      email을 String으로 가져옴
+        //토큰이 내 서버에서 생성되었는지   생성된 키가 내가 가진 secretKet와 일치하는지 확인      email을 String으로 가져옴
     }
 
     public String getRole(String token) {       //role(권한) 토큰 검증 메서드
