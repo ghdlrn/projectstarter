@@ -1,8 +1,7 @@
 package lkm.starterproject.config;
 
-import lkm.starterproject.constants.Role;
+import lkm.starterproject.jwt.JWTUtil;
 import lkm.starterproject.jwt.LoginFilter;
-import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -19,9 +18,11 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final AuthenticationConfiguration authenticationConfiguration;
+    private final JWTUtil jwtUtil;
 
-    public SecurityConfig(AuthenticationConfiguration authenticationConfiguration) {
+    public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, JWTUtil jwtUtil) {
         this.authenticationConfiguration = authenticationConfiguration;
+        this.jwtUtil = jwtUtil;
     }
 
     @Bean
@@ -45,10 +46,10 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests( (auth) -> auth      //경로별 인가작업
                         .requestMatchers("/login", "/", "/signup").permitAll()    // 해당 경로는 모든권한 허용
-                        .requestMatchers("/admin").hasRole("Role.ADMIN")     // 해당경로는 admin 권한대상자만 사용
+                        .requestMatchers("/admin").hasRole("ADMIN")     // 해당경로는 admin 권한대상자만 사용
                         .anyRequest().authenticated());     //기타 경로는 로그인한 사용자만 사용가능
-        http    //기존의 필터를 LoginFilter로 대체함
-                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration)), UsernamePasswordAuthenticationFilter.class);
+        http    //기존의 필터를 LoginFilter로 대체함, AuthenticationManager()와 JWTUtil 전달
+                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil), UsernamePasswordAuthenticationFilter.class);
 
         http
                 .sessionManagement((session) -> session
