@@ -23,7 +23,6 @@ public class CustomUserDetailsService implements UserDetailsService {
         MemberEntity memberEntity = userRepository.findByEmail(email);   //DB에서 이메일 찾음
 
         if (memberEntity != null) {
-
             return new CustomUserDetails(memberEntity);
         }
 
